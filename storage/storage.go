@@ -6,47 +6,14 @@ import (
 )
 
 var drinks []models.Drink
-
 var nextID = 1
 
 func init() {
 	drinks = []models.Drink{
-		{
-			ID:               nextID,
-			Name:             "Эспрессо",
-			Price:            120,
-			InStock:          true,
-			ContainsCaffeine: true,
-			Volume:           30,
-			Description:      "Крепкий итальянский кофе с насыщенным вкусом и плотной пенкой.",
-		},
-		{
-			ID:               nextID + 1,
-			Name:             "Капучино",
-			Price:            180,
-			InStock:          true,
-			ContainsCaffeine: true,
-			Volume:           200,
-			Description:      "Нежный кофейный напиток с молочной пеной.",
-		},
-		{
-			ID:               nextID + 2,
-			Name:             "Латте",
-			Price:            200,
-			InStock:          false,
-			ContainsCaffeine: true,
-			Volume:           300,
-			Description:      "Мягкий кофе с большим количеством молока.",
-		},
-		{
-			ID:               nextID + 3,
-			Name:             "Ромашковый чай",
-			Price:            90,
-			InStock:          true,
-			ContainsCaffeine: false,
-			Volume:           250,
-			Description:      "Успокаивающий травяной чай без кофеина.",
-		},
+		{ID: nextID, Name: "Эспрессо", Price: 120, InStock: true, ContainsCaffeine: true, Volume: 30, Description: "Крепкий итальянский кофе с насыщенным вкусом и плотной пенкой."},
+		{ID: nextID + 1, Name: "Капучино", Price: 180, InStock: true, ContainsCaffeine: true, Volume: 200, Description: "Нежный кофейный напиток с молочной пеной."},
+		{ID: nextID + 2, Name: "Латте", Price: 200, InStock: false, ContainsCaffeine: true, Volume: 300, Description: "Мягкий кофе с большим количеством молока."},
+		{ID: nextID + 3, Name: "Ромашковый чай", Price: 90, InStock: true, ContainsCaffeine: false, Volume: 250, Description: "Успокаивающий травяной чай без кофеина."},
 	}
 	nextID += 4
 }
@@ -78,12 +45,17 @@ func Create(input models.DrinkInput) (models.Drink, error) {
 	if input.Name == nil || input.Price == nil {
 		return models.Drink{}, errors.New("поля name и price обязательны")
 	}
-
-	drink := models.Drink{
-		ID:    nextID,
-		Name:  *input.Name,
-		Price: *input.Price,
+	if *input.Name == "" {
+		return models.Drink{}, errors.New("название не может быть пустым")
 	}
+	if *input.Price < 0 {
+		return models.Drink{}, errors.New("цена не может быть отрицательной")
+	}
+	if input.Volume != nil && *input.Volume <= 0 {
+		return models.Drink{}, errors.New("объём должен быть больше нуля")
+	}
+
+	drink := models.Drink{ID: nextID, Name: *input.Name, Price: *input.Price}
 	nextID++
 
 	if input.InStock != nil {
@@ -104,6 +76,16 @@ func Create(input models.DrinkInput) (models.Drink, error) {
 }
 
 func Update(id int, input models.DrinkInput) (models.Drink, error) {
+	if input.Name != nil && *input.Name == "" {
+		return models.Drink{}, errors.New("название не может быть пустым")
+	}
+	if input.Price != nil && *input.Price < 0 {
+		return models.Drink{}, errors.New("цена не может быть отрицательной")
+	}
+	if input.Volume != nil && *input.Volume <= 0 {
+		return models.Drink{}, errors.New("объём должен быть больше нуля")
+	}
+
 	for i, d := range drinks {
 		if d.ID == id {
 			if input.Name != nil {
